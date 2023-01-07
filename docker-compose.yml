@@ -1,5 +1,10 @@
 version: '3.3'
 services:
+  elasticsearch-head:
+    container_name: elasticsearch-head
+    images: mobz/elasticsearch-head:5
+    ports:
+      - 9100:9100
   elasticsearch:
     container_name: elasticsearch
     image: elasticsearch:7.5.0
