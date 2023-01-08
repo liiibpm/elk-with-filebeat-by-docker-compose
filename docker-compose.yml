@@ -1,11 +1,5 @@
 version: '3.3'
 services:
-  elasticsearch-head:
-    container_name: elasticsearch-head
-    image: mobz/elasticsearch-head:5
-    ports:
-      - 9100:9100
-    network_mode: bridge
   elasticsearch:
     container_name: elasticsearch
     image: elasticsearch:7.5.0
@@ -13,6 +7,9 @@ services:
       - bootstrap.memory_lock=true
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#       跨域问题处理
+      - http.cors.enabled=true
+      - http.cors.allow-origin="*"
     ulimits:
       memlock:
         soft: -1
@@ -28,6 +25,22 @@ services:
       options:
         max-size: "10m"
         max-file: "50"
+        # 这个在docker中启动后 死活链接不了es  
+#         尝试过在es中处理跨域的问题  后来又出现403问题
+#         最后是使用google的浏览器插件（跟这个东西一样的  就是个前端展示） 来进行es的监控
+#   所以这里没必要再用了
+#   elasticsearch-head:
+#     container_name: elasticsearch-head
+#     image: mobz/elasticsearch-head:5
+#     ulimits:
+#       memlock:
+#         soft: -1
+#         hard: -1
+#     ports:
+#       - 9100:9100
+#     links:
+#       - elasticsearch:elasticsearch
+#     network_mode: bridge
   kibana:
     container_name: kibana
     image: kibana:7.5.0
@@ -84,7 +97,8 @@ services:
     volumes:
       - /var/run/docker.sock:/host_docker/docker.sock
       - /var/lib/docker:/host_docker/var/lib/docker
-      - ./mylog:/usr/share/filebeat/mylog
+#       收集要监测展示的日志，将实际日志的位置挂载到 filebeat.yml中前面指定的位置
+      - /home/win/jenkins-docker/data/logs/enc:/usr/share/filebeat/mylog
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
     command: ["--strict.perms=false"]
     ulimits:
